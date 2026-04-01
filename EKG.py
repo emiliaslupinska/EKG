@@ -290,11 +290,11 @@ with col_hist:
         fig_hist.update_layout(height=230, margin=dict(l=0,r=0,t=0,b=0),yaxis_title="Liczba zliczeń")
         st.plotly_chart(fig_hist, use_container_width=True)
 
-#from PyEMD import EMD
+from PyEMD import EMD
 
 #%%--------------------------------SEKCJA 4: DEKOMPOZYCJA EMD--------------------------
 
-st.markdown(f"""<p style="font-size: 18px; font-weight: bold; color: {fioletowy};">Empiryczna Dekompozycja Modalna (emd)</p>""", unsafe_allow_html=True)
+st.markdown(f"""<p style="font-size: 18px; font-weight: bold; color: {fioletowy};">Empiryczna Dekompozycja Modalna (EMD)</p>""", unsafe_allow_html=True)
 st.markdown(f"""<hr style="margin-top: -10px; height:5px; border:none; background-color:{fioletowy};" />""", unsafe_allow_html=True)
 
 # Sprawdzamy, czy mamy dane w wybranym przez suwak zakresie
@@ -311,7 +311,7 @@ if not df_filtered_view.empty:
 
     # Uruchomienie EMD
     with st.spinner('Trwa dekompozycja...'):
-        emd = emd()
+        emd = EMD()
         imfs = emd(data_to_emd)
         n_imfs = imfs.shape[0]
         
