@@ -412,8 +412,8 @@ st.markdown(f"""<hr style="margin-top: -10px; height:5px; border:none; backgroun
     
 if n_imfs >= 2:
         # 1. Definiujemy oddech (sumujemy dwie ostatnie składowe - jak u prowadzącego zmienna 'o')
-        oddech_drift = imfs[-1] + imfs[-2]
-        
+        #oddech_drift = imfs[-1] + imfs[-2]
+        oddech_drift = imfs.sum(axis=0) - imfs[6] - imfs[7]        
         # 2. PROSTOWANIE: Odejmowanie dryftu od oryginalnego sygnału
         ecg_wyprostowane = data_to_emd - oddech_drift
 
