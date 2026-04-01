@@ -416,7 +416,6 @@ if n_imfs >= 2:
         oddech_drift = imfs[6] - imfs[7]        
         # 2. PROSTOWANIE: Odejmowanie dryftu od oryginalnego sygnału
         #ecg_wyprostowane = data_to_emd - oddech_drift
-        ecg_wyprostowane
         suma_wszystkich = imfs.sum(axis=0)
 
         # Tworzymy sygnał wyprostowany (odejmujemy indeksy 6 i 7, czyli IMF-7 i IMF-8)
