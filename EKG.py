@@ -117,7 +117,7 @@ if not txt_files:
 selected_file = st.sidebar.selectbox("Wybierz plik z danymi EKG:", txt_files)
 df = load_my_data(selected_file)
 df = df.apply(pd.to_numeric, errors='coerce').dropna()
-df['ecg']=df['ecg']+3*np.sin(5*df[df'czas'])
+df['ecg'] = df['ecg'] + 3 * np.sin(5 * df['czas'])
 #%%---------------------------------Tytuł i ramka------------------------------
 
 st.markdown(f"""
