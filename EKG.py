@@ -290,7 +290,7 @@ with col_hist:
         fig_hist.update_layout(height=230, margin=dict(l=0,r=0,t=0,b=0),yaxis_title="Liczba zliczeń")
         st.plotly_chart(fig_hist, use_container_width=True)
 
-#from PyEMD import EMD
+from PyEMD import EMD
 
 #%%--------------------------------SEKCJA 4: DEKOMPOZYCJA EMD--------------------------
 
