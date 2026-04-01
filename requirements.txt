@@ -9,3 +9,4 @@ plotly
 neurokit2
 PyEMD
 EMD
+EMD-signal
