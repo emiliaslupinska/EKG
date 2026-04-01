@@ -1,10 +1,9 @@
 streamlit
 pandas
-rdkit>=2022.9.1
-py3Dmol
-plotly
-natsort
-numpy
-Pillow
-gdown
 matplotlib
+numpy
+scipy
+emd
+seaborn
+plotly
+neurokit2
