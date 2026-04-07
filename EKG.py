@@ -1,3 +1,4 @@
+#%%-------------------------importowanie bibliotek-----------------------------
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np 
@@ -24,7 +25,7 @@ try:
 except NameError:
     current_dir = os.getcwd()
 
-# Próba wejścia do folderu z danymi
+# Wejście do folderu z danymi
 if os.path.exists(path_inp):
     if os.path.isdir(path_inp):
         os.chdir(path_inp)
@@ -33,11 +34,10 @@ if os.path.exists(path_inp):
 else:
     os.chdir(current_dir)
     
-#%%--------------------------------Ustawienia wstępne kolorów------------------
+#%%-----------------------------Ustawienia kolorów-----------------------------
 
 st.set_page_config(layout="wide", page_title="Analiza EKG")
 
-# Nowe definicje kolorów (Róż i Fiolet)
 rozowy          = "#FF00FF"  # Żywy róż (Magenta)
 fioletowy       = "#8A2BE2"  # Blue Violet
 jasny_fiolet    = "#E0B0FF"  # Mauve (do tła)
@@ -146,8 +146,7 @@ with col2:
     df_stary = df.copy()
     df_filtered_view = df[(df['czas'] >= zakres_czasu[0]) & (df['czas'] <= zakres_czasu[1])].copy()
 
-    # --- KLUCZOWA POPRAWKA: FILTRACJA MUSI BYĆ TUTAJ ---
-    # Definiujemy parametry filtra (możesz je zmienić, jeśli gładkość Ci nie pasuje)
+    # Definiujemy parametry filtra
     n_samples = len(df_filtered_view)
     if n_samples > 11:  # filtr potrzebuje minimum danych
         df_filtered_view['ecg_filtered'] = savgol_filter(df_filtered_view['ecg'], window_length=51, polyorder=3)
@@ -167,29 +166,26 @@ with col2:
         category_orders={"names": ["Fragment do analizy", "Pozostała część"]}
     )
 
-    # 2. Ustawienia legendy (TU MUSI BYĆ update_layout)
+    # 2. Ustawienia legendy
     fig_pie.update_layout(
-        height=280,                # Zwiększyłem wysokość, żeby legenda miała miejsce
+        height=280,                
         margin=dict(l=20, r=20, t=20, b=50),
-        showlegend=True,           # WYMUSZENIE wyświetlania legendy
+        showlegend=True,           
         legend=dict(
-            orientation="h",       # Legenda w poziomie
+            orientation="h",      
             yanchor="top",
-            y=-0.1,                # Pozycja pod wykresem
+            y=-0.1,                
             xanchor="center",
             x=0.5
         )
     )
-    
-    # 3. WYŚWIETLENIE (Ta linijka musi być OSTATNIA w tym bloku)
     st.plotly_chart(fig_pie, use_container_width=True)
     
 with col3:
-    # Tworzymy kontener z ramką (border=True)
     with st.container(border=True):
         fig = go.Figure()
 
-        # 1. Dodajemy Sygnał - Całość (szary)
+        # 1. Dodajemy Sygnał - Całość 
         fig.add_trace(go.Scatter(
             x=df_stary['czas'], 
             y=df_stary['ecg'], 
@@ -197,7 +193,7 @@ with col3:
             line=dict(color=bialo_szary, width=1)
         ))
 
-        # 2. Dodajemy Sygnał - Wybrany fragment (różowy)
+        # 2. Dodajemy Sygnał - Wybrany fragment
         fig.add_trace(go.Scatter(
             x=df_filtered_view['czas'], 
             y=df_filtered_view['ecg'], 
@@ -205,13 +201,13 @@ with col3:
             line=dict(color=rozowy, width=2)
         ))
 
-        # 3. Stylizacja wykresu i PRZESUNIĘCIE LEGENDY
+        # 3. Stylizacja wykresu
         fig.update_layout(
             height=350,
             margin=dict(l=10, r=10, t=10, b=10),
             paper_bgcolor='rgba(0,0,0,0)',
             plot_bgcolor='rgba(0,0,0,0)',
-            # Ustawienia legendy (przesunięcie w lewo i do góry)
+            # Ustawienia legendy
             legend=dict(
                 orientation="h",      # Legenda w poziomie
                 yanchor="bottom",
@@ -230,32 +226,29 @@ with col3:
     
 #%%-----------------------------------SEKCJA 2: HRV & HISTOGRAM---------------------------------
 
-# Obliczenia pików (muszą być przed wizualizacją)
+# Obliczenia pików
 peaks, _ = find_peaks(df_filtered_view['ecg_filtered'], distance=500, height=0.25)
 if len(peaks) > 1:
     rr_intervals = np.diff(df_filtered_view['czas'].iloc[peaks].values) * 1000
 else:
     rr_intervals = []
 
-# GŁÓWNY PODZIAŁ SEKCJI (Zgodnie z plikiem prowadzącego)
+# GŁÓWNY PODZIAŁ SEKCJI
 col_hrv, col_hist = st.columns([ 4 , 4.5 ])
 
 
 with col_hrv:
-    # Tutaj musi być wcięcie (4 spacje lub 1 Tab)
     st.markdown(f"""<p style="font-size: 18px; font-weight: bold; color: {fioletowy};">Identyfikacja załamków R i tworzenie szeregu RR</p>""", unsafe_allow_html=True)
     st.markdown(f"""<hr style="margin-top: -10px; height:5px; border:none; background-color:{fioletowy};" />""", unsafe_allow_html=True)
     
-    # Kolejne linie też muszą mieć to samo wcięcie
     c_left, c_right = st.columns([1.5, 3.5])
 
     with c_left:
-        # OKIENKO 1: Zbliżenie na piki (identyfikacja)
-        # Pokazujemy tylko mały wycinek (np. pierwsze 3 sekundy wybranego zakresu)
+        # OKNO 1: (identyfikacja pików)
         st.markdown(f'<p style="font-size: 14px; color: {fioletowy}; text-align: center;">Identyfikacja załamków R</p>', unsafe_allow_html=True)
         
         t_start = df_filtered_view['czas'].iloc[0]
-        df_zoom = df_filtered_view[df_filtered_view['czas'] <= t_start + 10] # zoom na 10 sekundy
+        df_zoom = df_filtered_view[df_filtered_view['czas'] <= t_start + 10]
         peaks_zoom, _ = find_peaks(df_zoom['ecg_filtered'], distance=400, height=0.25)
         
         fig_zoom = go.Figure()
@@ -265,7 +258,7 @@ with col_hrv:
         st.plotly_chart(fig_zoom, use_container_width=True)
 
     with c_right:
-        # OKIENKO 2: Wykres szeregu RR (Tachogram)
+        # OKNO 2: Wykres szeregu RR (Tachogram)
         st.markdown(f'<p style="font-size: 14px; color: {fioletowy}; text-align: center;">Szereg RR (ms)</p>', unsafe_allow_html=True)
         
         if len(rr_intervals) > 0:
@@ -284,7 +277,7 @@ with col_hrv:
 with col_hist:
     st.markdown(f'<p style="font-size: 18px; font-weight: bold; color:{fioletowy};">Histogram</p>', unsafe_allow_html=True)
     st.markdown(f"""<hr style="margin-top: -10px; height:5px; border:none; background-color:{fioletowy};" />""", unsafe_allow_html=True)
-    # Tu wstawiamy Histogram (tak jak zrobiliśmy wcześniej)
+    # Histogram
     if len(rr_intervals) > 0:
         fig_hist = px.histogram(x=rr_intervals, nbins=20, color_discrete_sequence=[fioletowy], labels={'x': 'Odstęp RR [ms]'})
         fig_hist.update_layout(height=230, margin=dict(l=0,r=0,t=0,b=0),yaxis_title="Liczba zliczeń")
@@ -292,17 +285,15 @@ with col_hist:
 
 from PyEMD import EMD
 
-#%%--------------------------------SEKCJA 4: DEKOMPOZYCJA EMD--------------------------
+#%%--------------------------------SEKCJA 3: DEKOMPOZYCJA EMD--------------------------
 
 st.markdown(f"""<p style="font-size: 18px; font-weight: bold; color: {fioletowy};">Empiryczna Dekompozycja Modalna (EMD)</p>""", unsafe_allow_html=True)
 st.markdown(f"""<hr style="margin-top: -10px; height:5px; border:none; background-color:{fioletowy};" />""", unsafe_allow_html=True)
 
-# Sprawdzamy, czy mamy dane w wybranym przez suwak zakresie
 if not df_filtered_view.empty:
     
     # POBIERANIE DANYCH Z SYNCHRONIZACJĄ:
-    # Używamy dokładnie tego, co wyciął suwak w Sekcji 1
-    data_to_emd = df_filtered_view['ecg'].values #możliwoć zamiany ecg-surowy sygnał, ecg_filtered-po użyciu filtra
+    data_to_emd = df_filtered_view['ecg'].values #możliwoć zamianysygnału: ecg-surowy sygnał, ecg_filtered-po użyciu filtra
     time_to_emd = df_filtered_view['czas'].values
     
     # Informacja o długości analizowanego fragmentu
@@ -315,7 +306,7 @@ if not df_filtered_view.empty:
         imfs = emd(data_to_emd)
         n_imfs = imfs.shape[0]
         
-# 1. Obliczenia i przygotowanie wierszy
+# 1. Obliczenia i przygotowanie wierszy imfs
 display_imfs = n_imfs  
 rows_count = display_imfs + 1
 fig_emd = make_subplots(
@@ -324,17 +315,16 @@ fig_emd = make_subplots(
         vertical_spacing=0.02
     )
 
-    # 1. Dodajemy SUMMED IMFs na samej górze (Czarny wykres)
-    # Używamy np.arange dla osi X, aby mieć "samples" 
+    # 1.Dodajemy SUMMED IMFs na samej górze
 samples_x = np.arange(len(data_to_emd))
     
-# 2. SUMMED IMFs - Pogrubiona linia w kolorze Charcoal (z Twojej listy)
+# 2. SUMMED IMFs
 fig_emd.add_trace(
         go.Scatter(x=samples_x, y=data_to_emd, line=dict(color=charcoal, width=1.5)),
         row=1, col=1
     )
 
-    # 2. Dodajemy składowe IMF w pętli
+    # Dodajemy składowe IMF w pętli
 kolory = [rozowy, fioletowy, ciemny_fiolet, "#FF69B4", "#DA70D6", "#FF1493", jasny_fiolet]
     
 for i in range(display_imfs):
@@ -342,26 +332,24 @@ for i in range(display_imfs):
             go.Scatter(
                 x=samples_x, 
                 y=imfs[i], 
-                # Pogrubiamy linię (width=2)
                 line=dict(color=kolory[i % len(kolory)], width=2)
             ),
             row=i + 2, col=1
         )
     
 
-# 3. KLUCZOWE: Podpisy po lewej i AUTOMATYCZNA SKALA Y
+# 3. Legenda i skala
 names = ["Summed<br>IMFs"] + [f"IMF-{i+1}" for i in range(display_imfs)]
     
 for i, name in enumerate(names):
         curr_row = i + 1
         
-        # Pobieramy dane dla konkretnego wiersza (żeby dopasować wysokość)
+        # wysokoć
         current_data = data_to_emd if curr_row == 1 else imfs[i-1]
             
-        # Obliczamy dynamiczny zakres (np. 10% zapasu góra/dół)
         y_max = np.max(np.abs(current_data)) * 1.1
         
-        # Ustawienie osi Y (Dynamicznie!)
+        # Ustawienie osi Y
         fig_emd.update_yaxes(
             range=[-y_max, y_max], 
             row=curr_row, col=1,
@@ -369,11 +357,11 @@ for i, name in enumerate(names):
             gridcolor='lightgrey'
         )
         
-        # DODANIE NAPISU PO LEWEJ - TYLKO JEDNA PĘTLA
+        # DODANIE skali po lewej stronie
         fig_emd.add_annotation(
             dict(
                 text=f"<b>{name}</b>", 
-                x=-0.12, # Jeszcze większe przesunięcie w lewo, by nic nie ucinało
+                x=-0.12,
                 y=0.5,
                 xref="paper",
                 yref=f"y{curr_row if curr_row > 1 else ''} domain",
@@ -398,7 +386,6 @@ fig_emd.update_xaxes(
 
 fig_emd.update_layout(
         height=150 * rows_count,
-        # Margines 250 daje bardzo dużo miejsca na napisy po lewej
         margin=dict(l=250, r=30, t=30, b=80), 
         plot_bgcolor='white',   # Białe tło pod wykresem
         paper_bgcolor='white',  # Białe tło całej karty
@@ -406,12 +393,13 @@ fig_emd.update_layout(
     )
 
 st.plotly_chart(fig_emd, use_container_width=True)
-# --- SEKCJA 5: PROSTOWANIE SYGNAŁU (ZADANIE 2 i 3) ---
+
+#%% ------------- SEKCJA 4: PROSTOWANIE SYGNAŁU (ZADANIE 2 i 3) ---------------
 st.markdown(f"""<p style="font-size: 18px; font-weight: bold; color: {fioletowy};">Usuwanie modulacji oddechowej (Prostowanie EKG)</p>""", unsafe_allow_html=True)
 st.markdown(f"""<hr style="margin-top: -10px; height:5px; border:none; background-color:{fioletowy};" />""", unsafe_allow_html=True)
     
 if n_imfs >= 2:
-        # 1. Definiujemy oddech (sumujemy dwie ostatnie składowe - jak u prowadzącego zmienna 'o')
+        # 1. Definiujemy oddech
         oddech_drift = imfs[-1] + imfs[-2]
         
         # 2. PROSTOWANIE: Odejmowanie dryftu od oryginalnego sygnału
@@ -420,14 +408,14 @@ if n_imfs >= 2:
         # 3. Wykres porównawczy
         fig_clean = go.Figure()
 
-        # Sygnał oryginalny (szary, w tle)
+        # Sygnał oryginalny (szary)
         fig_clean.add_trace(go.Scatter(
             x=time_to_emd, y=data_to_emd, 
             name="Sygnał surowy", 
             line=dict(color=bialo_szary, width=1)
         ))
 
-        # Sygnał wyprostowany (fioletowy, główny)
+        # Sygnał wyprostowany (fioletowy)
         fig_clean.add_trace(go.Scatter(
             x=time_to_emd, y=ecg_wyprostowane, 
             name="EKG po usunięciu modulacji", 
@@ -444,7 +432,7 @@ if n_imfs >= 2:
         )
         st.plotly_chart(fig_clean, use_container_width=True)
 
-        # 4. EKSPORT (Zadanie 3 prowadzącego)
+        # 4. EKSPORT (Zadanie 3 )
         st.success("Zadanie 3: Sygnał wyprostowany gotowy do eksportu.")
         
         # Przygotowanie danych do pliku tekstowego
@@ -453,7 +441,7 @@ if n_imfs >= 2:
             'ECG_clean': ecg_wyprostowane
         })
         
-        # Generowanie pliku do pobrania (format TXT, tabulatory)
+        # Generowanie pliku do pobrania (format TXT)
         csv_txt = df_out.to_csv(index=False, sep='\t')
         
         st.download_button(
@@ -479,7 +467,7 @@ fft_raw_plot = fft_raw[pos_mask]
 fft_clean_plot = fft_clean[pos_mask]
 
     # 2. Wykres widma
-fig_fft = go.Figure() # Poprawiona literka 'f' na początku
+fig_fft = go.Figure()
 
 fig_fft.add_trace(go.Scatter(
         x=f_plot, y=fft_raw_plot, 
@@ -497,11 +485,10 @@ fig_fft.update_layout(
         height=400,
         xaxis_title="Częstotliwość [Hz]",
         yaxis_title="Amplituda",
-        xaxis_range=[0, 15], # Interesuje nas zakres 0-15 Hz (tam jest serce i oddech)
+        xaxis_range=[0, 15], # zakres 0-15 Hz
         plot_bgcolor='white',
         paper_bgcolor='white',
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
     )
 
 st.plotly_chart(fig_fft, use_container_width=True)
-
